@@ -101,7 +101,11 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\ValuesController.cs" />
+    <Compile Include="Controllers\EventsController.cs" />
+    <Compile Include="Controllers\LockController.cs" />
+    <Compile Include="DAL\ILockData.cs" />
+    <Compile Include="DAL\LockDAL.cs" />
+    <Compile Include="DAL\LockData.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
