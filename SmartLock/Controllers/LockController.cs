@@ -28,19 +28,25 @@ namespace SmartLock.Controllers
             return Json(lockDal.GetLocksState().ToList());
         }
 
-        // GET lock/5
+        // GET lock?lockId=5
         [HttpGet]
-        public JsonResult<string> GetLockState(int id)
+        public JsonResult<string> GetLockState([FromUri]int lockId)
         {
-            return Json(lockDal.GetLockState(id));
+            return Json(lockDal.GetLockState(lockId));
         }
 
-        // PUT lock/5?value=5
-        [HttpPut]
-        public JsonResult<string> ModifyLockState(int id, [FromUri]string state)
+        // PUT lock?lockId=5&state=Unlock&userId=12101
+        [HttpPost]
+        public JsonResult<string> ModifyLockState(int lockId, [FromUri]int userId, [FromUri]string state)
         {
+            string resultString = string.Empty;
             // authenticate user before attempting to modify lock.
-            return Json(lockDal.ModifyLockState(id, state));
+            if (lockDal.ModifyLockState(lockId, userId, state))
+            {
+                resultString = state + "ed";
+            }
+
+            return Json(resultString);
         }
 
         // POST lock

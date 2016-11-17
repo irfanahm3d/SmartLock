@@ -10,6 +10,6 @@ namespace SmartLock.DAL
     {
         string GetLockState(int lockId);
 
-        string ModifyLockState(int lockId, string state);
+        bool ModifyLockState(int lockId, int userId, string state);
     }
 }

@@ -27,16 +27,16 @@ namespace SmartLock.DAL
 
         public string GetLockState(int lockId)
         {
-            return "value";
+            return lockDataLayer.GetLockState(lockId);
         }
 
-        public string ModifyLockState(int lockId, string state)
+        public bool ModifyLockState(int lockId, int userId, string state)
         {
             // check if user is allowed to change the state of the
             // lock (should happen in data layer).
 
 
-            return state;
+            return lockDataLayer.ModifyLockState(lockId, userId, state);
         }
     }
 }
