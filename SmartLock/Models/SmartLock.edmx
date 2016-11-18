@@ -17,7 +17,7 @@
           <Key>
             <PropertyRef Name="LockId" />
           </Key>
-          <Property Name="LockId" Type="int" Nullable="false" />
+          <Property Name="LockId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Name" Type="varchar" MaxLength="255" Nullable="false" />
           <Property Name="State" Type="varchar" MaxLength="255" Nullable="false" />
         </EntityType>

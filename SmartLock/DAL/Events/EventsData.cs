@@ -5,10 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using SmartLock.Models;
-using System.Data.Entity;
-using System.Linq;
 using System.Globalization;
+using System.Linq;
+using SmartLock.Models;
 
 namespace SmartLock.DAL.Events
 {

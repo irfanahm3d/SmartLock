@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SmartLock.Models;
 
@@ -12,6 +13,28 @@ namespace SmartLock.DAL.Lock
 {
     public class LockData : ILockData
     {
+        public IList<string> GetLocks()
+        {
+            using (var smartLock = new SmartLockEntities())
+            {
+                var query = from locks in smartLock.LockInfoes
+                            select locks;
+
+                var locksList = new List<string>();
+                foreach(LockInfo element in query)
+                {
+                    locksList.Add(
+                        String.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0};{1}",
+                            element.Name,
+                            element.State));
+                }
+
+                return locksList;
+            }
+        }
+
         public string GetLockState(int lockId)
         {
             using (var smartLock = new SmartLockEntities())
@@ -38,57 +61,35 @@ namespace SmartLock.DAL.Lock
                 if (lockAccess == null)
                 {
                     // user does not have access to the lock. Throw exception.
-                    // event should also be logged
-                    smartLock.UserEvents.Add(
-                    new UserEvent
-                    {
-                        LockId = lockId,
-                        UserId = userId,
-                        State = "Unauthorized",
-                        Timestamp = DateTime.Now
-                    });
-
-                    smartLock.SaveChanges();
-
                     throw new ArgumentException("userId");
                 }
                 
                 LockInfo lockInfo = smartLock.LockInfoes.FirstOrDefault(l => l.LockId == lockId);
                 lockInfo.State = state;
 
-                int changes = smartLock.SaveChanges();
-
-                bool result = false;
-                if (changes == 1)
-                {
-                    result = true;
-                }
-                else
-                {
-                    state = "Failed";
-                }
-
-                smartLock.UserEvents.Add(
-                    new UserEvent
-                    {
-                        LockId = lockId,
-                        UserId = userId,
-                        State = state,
-                        Timestamp = DateTime.Now
-                    });
-                smartLock.SaveChanges();
-                return result;
+                int changes = smartLock.SaveChanges();                
+                return changes == 1 ? true : false;
             }
         }
 
-        public bool CreateLock(string lockName, IList<int> allowedUsers)
+        public bool CreateLock(string lockName, int currentUserId, IList<int> allowedUsers)
         {
             using (var smartLock = new SmartLockEntities())
             {
                 int changes = 0;
+
+                UserInfo adminUser = smartLock.UserInfoes.FirstOrDefault(u => u.UserId == currentUserId && u.IsAdmin);
+
+                if (adminUser == null)
+                {
+                    // user not allowed to create locks. Is not admin
+                    throw new ArgumentException("currentUserId");
+                }
+
                 var lockInfo = new LockInfo
                 {
-                    Name = lockName
+                    Name = lockName,
+                    State = "Locked"
                 };
 
                 smartLock.LockInfoes.Add(lockInfo);

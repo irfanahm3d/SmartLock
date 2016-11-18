@@ -22,9 +22,9 @@ namespace SmartLock.DAL.Lock
             this.lockDataLayer = lockData;
         }
 
-        public IList<string> GetLocksState()
+        public IList<string> GetLocks()
         {
-            return new List<string> { "value1", "value2" };
+            return this.lockDataLayer.GetLocks();
         }
 
         public string GetLockState(int lockId)
@@ -41,9 +41,9 @@ namespace SmartLock.DAL.Lock
             return this.lockDataLayer.ModifyLockState(lockId, userId, state);
         }
 
-        public bool CreateLock(string lockName, IList<int> allowedUsers)
+        public bool CreateLock(string lockName, int currentUserId, IList<int> allowedUsers)
         {
-            return this.lockDataLayer.CreateLock(lockName, allowedUsers);
+            return this.lockDataLayer.CreateLock(lockName, currentUserId, allowedUsers);
         }
     }
 }

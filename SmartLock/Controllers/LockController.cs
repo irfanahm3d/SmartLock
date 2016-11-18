@@ -3,6 +3,7 @@
  * Copyright (c) Irfan Ahmed. 2016
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
@@ -32,38 +33,70 @@ namespace SmartLock.Controllers
 
         // GET lock/
         [HttpGet]
-        public JsonResult<List<string>> GetLocksState()
+        public JsonResult<List<string>> GetLocks()
         {
-            return Json(this.lockDal.GetLocksState().ToList());
+            return Json(this.lockDal.GetLocks().ToList());
         }
 
         // GET lock?lockId=5
         [HttpGet]
         public JsonResult<string> GetLockState([FromUri]int lockId)
         {
-            return Json(this.lockDal.GetLockState(lockId));
+            string result = String.Empty;
+            try
+            {
+                result = this.lockDal.GetLockState(lockId);
+            }
+            catch (Exception)
+            {
+                result = "Not found";
+            }
+
+            return Json(result);
         }
 
         // PUT lock?lockId=5&state=Unlock&userId=12101
         [HttpPost]
         public JsonResult<string> ModifyLockState(int lockId, [FromUri]int userId, [FromUri]string state)
         {
-            string resultString = string.Empty;
-            // authenticate user before attempting to modify lock.
-            if (this.lockDal.ModifyLockState(lockId, userId, state))
+            bool result = false;
+            string finalState = String.Empty;
+            
+            try
             {
-                resultString = state + "ed";
+                result = this.lockDal.ModifyLockState(lockId, userId, state);
+                finalState = result ? state : "Failed";
+            }
+            catch (Exception)
+            {
+                finalState = "Unauthorized";
+            }
+            finally
+            {
+                this.eventsDal.CreateEvent(lockId, userId, finalState);
             }
 
-            return Json(resultString);
+            return Json(finalState);
         }
 
         // POST lock
         // Note: Only Admins can utilize this api
         [HttpPost]
-        public void CreateLock([FromUri]string lockName, [FromUri]IList<int> allowedUsers)
+        public JsonResult<string> CreateLock([FromUri]string lockName, [FromUri]int currentUserId, [FromUri]IList<int> allowedUsers)
         {
-            this.lockDal.CreateLock(lockName, allowedUsers);
+            string result = String.Empty;
+            try
+            {
+                result = 
+                    this.lockDal.CreateLock(lockName, currentUserId, allowedUsers) ? 
+                    "Created" : "Failed";
+            }
+            catch (Exception)
+            {
+                result = "Unauthorized";
+            }
+
+            return Json(result);
         }
 
         // DELETE lock/5
