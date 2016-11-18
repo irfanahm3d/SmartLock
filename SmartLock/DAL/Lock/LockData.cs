@@ -72,20 +72,12 @@ namespace SmartLock.DAL.Lock
             }
         }
 
-        public bool CreateLock(string lockName, int currentUserId, IList<int> allowedUsers)
+        public bool CreateLock(string lockName, IList<int> allowedUsers)
         {
             using (var smartLock = new SmartLockEntities())
             {
                 int changes = 0;
-
-                UserInfo adminUser = smartLock.UserInfoes.FirstOrDefault(u => u.UserId == currentUserId && u.IsAdmin);
-
-                if (adminUser == null)
-                {
-                    // user not allowed to create locks. Is not admin
-                    throw new ArgumentException("currentUserId");
-                }
-
+                
                 var lockInfo = new LockInfo
                 {
                     Name = lockName,

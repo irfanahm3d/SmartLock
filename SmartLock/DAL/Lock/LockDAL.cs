@@ -41,9 +41,9 @@ namespace SmartLock.DAL.Lock
             return this.lockDataLayer.ModifyLockState(lockId, userId, state);
         }
 
-        public bool CreateLock(string lockName, int currentUserId, IList<int> allowedUsers)
+        public bool CreateLock(string lockName, IList<int> allowedUsers)
         {
-            return this.lockDataLayer.CreateLock(lockName, currentUserId, allowedUsers);
+            return this.lockDataLayer.CreateLock(lockName, allowedUsers);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace SmartLock.DAL.Events
                         LockId = lockId,
                         UserId = userId,
                         State = lockState,
-                        Timestamp = DateTime.Now
+                        Timestamp = DateTime.UtcNow
                     });
 
                 int change = smartLock.SaveChanges();

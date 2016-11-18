@@ -15,7 +15,7 @@ namespace SmartLock.DAL.Lock
 
         bool ModifyLockState(int lockId, int userId, string state);
 
-        bool CreateLock(string lockName, int currentUserId, IList<int> allowedUsers);
+        bool CreateLock(string lockName, IList<int> allowedUsers);
 
         bool CreateUserAccess(int lockId, IList<int> allowedUsers);
     }

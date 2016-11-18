@@ -10,25 +10,29 @@ using System.Web.Http;
 using System.Web.Http.Results;
 using SmartLock.DAL.Events;
 using SmartLock.DAL.Lock;
+using SmartLock.DAL.User;
 
 namespace SmartLock.Controllers
 {
     public class LockController : ApiController
     {
         LockDAL lockDal;
+        UserDAL userDal;
         EventsDAL eventsDal;
 
         public LockController()
         {
             this.lockDal = new LockDAL();
             this.eventsDal = new EventsDAL();
+            this.userDal = new UserDAL();
         }
 
         // For unit testing purposes
-        internal LockController(LockDAL lockDal, EventsDAL eventsDal)
+        internal LockController(LockDAL lockDal, EventsDAL eventsDal, UserDAL userDal)
         {
             this.lockDal = lockDal;
             this.eventsDal = eventsDal;
+            this.userDal = userDal;
         }
 
         // GET lock/
@@ -64,6 +68,7 @@ namespace SmartLock.Controllers
             
             try
             {
+                this.userDal.GetUser(userId);
                 result = this.lockDal.ModifyLockState(lockId, userId, state);
                 finalState = result ? state : "Failed";
             }
@@ -87,13 +92,22 @@ namespace SmartLock.Controllers
             string result = String.Empty;
             try
             {
-                result = 
-                    this.lockDal.CreateLock(lockName, currentUserId, allowedUsers) ? 
-                    "Created" : "Failed";
+                string userInfo = this.userDal.GetUser(currentUserId);
+                string[] tokens = userInfo.Split(';');
+                if (Boolean.Parse(tokens[2]))
+                {
+                    result =
+                        this.lockDal.CreateLock(lockName, allowedUsers) ?
+                        "Created" : "Failed";
+                }
+                else
+                {
+                    result = "Unauthorized";
+                }
             }
             catch (Exception)
             {
-                result = "Unauthorized";
+                result = "Not found";
             }
 
             return Json(result);
