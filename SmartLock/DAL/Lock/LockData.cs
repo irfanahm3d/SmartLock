@@ -1,16 +1,20 @@
-﻿using SmartLock.Models;
+﻿/*
+ * SmartLock
+ * Copyright (c) Irfan Ahmed. 2016
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using SmartLock.Models;
 
-namespace SmartLock.DAL
+namespace SmartLock.DAL.Lock
 {
     public class LockData : ILockData
     {
         public string GetLockState(int lockId)
         {
-            using (SmartLockEntities smartLock = new SmartLockEntities())
+            using (var smartLock = new SmartLockEntities())
             {
                 LockInfo lockInfo = smartLock.LockInfoes.FirstOrDefault(l => l.LockId == lockId);
 
@@ -25,7 +29,7 @@ namespace SmartLock.DAL
 
         public bool ModifyLockState(int lockId, int userId, string state)
         {
-            using (SmartLockEntities smartLock = new SmartLockEntities())
+            using (var smartLock = new SmartLockEntities())
             {
                 LockAccess lockAccess = 
                     smartLock.LockAccesses.FirstOrDefault(l => l.UserId == userId && l.LockId == lockId);
@@ -75,6 +79,56 @@ namespace SmartLock.DAL
                 smartLock.SaveChanges();
                 return result;
             }
+        }
+
+        public bool CreateLock(string lockName, IList<int> allowedUsers)
+        {
+            using (var smartLock = new SmartLockEntities())
+            {
+                int changes = 0;
+                var lockInfo = new LockInfo
+                {
+                    Name = lockName
+                };
+
+                smartLock.LockInfoes.Add(lockInfo);
+                changes += smartLock.SaveChanges();
+
+                if (allowedUsers.Count > 0)
+                {
+                    smartLock.LockAccesses.AddRange(this.PopulateLockAccessList(lockInfo.LockId, allowedUsers));
+                    changes += smartLock.SaveChanges();
+                }
+
+                return (changes == allowedUsers.Count + 1) ? true : false;
+            }
+        }
+
+        public bool CreateUserAccess(int lockId, IList<int> allowedUsers)
+        {
+            using (var smartLock = new SmartLockEntities())
+            {
+                smartLock.LockAccesses.AddRange(this.PopulateLockAccessList(lockId, allowedUsers));
+                int changes = smartLock.SaveChanges();
+
+                return changes == allowedUsers.Count ? true : false;
+            }
+        }
+
+        IList<LockAccess> PopulateLockAccessList(int lockId, IList<int> allowedUsers)
+        {
+            var lockAccessList = new List<LockAccess>();
+            foreach (int userId in allowedUsers)
+            {
+                lockAccessList.Add(
+                    new LockAccess
+                    {
+                        LockId = lockId,
+                        UserId = userId
+                    });
+            }
+
+            return lockAccessList;
         }
     }
 }

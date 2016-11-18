@@ -129,9 +129,12 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\EventsController.cs" />
     <Compile Include="Controllers\LockController.cs" />
-    <Compile Include="DAL\ILockData.cs" />
-    <Compile Include="DAL\LockDAL.cs" />
-    <Compile Include="DAL\LockData.cs" />
+    <Compile Include="DAL\Events\EventsDAL.cs" />
+    <Compile Include="DAL\Events\EventsData.cs" />
+    <Compile Include="DAL\Events\IEventsData.cs" />
+    <Compile Include="DAL\Lock\ILockData.cs" />
+    <Compile Include="DAL\Lock\LockDAL.cs" />
+    <Compile Include="DAL\Lock\LockData.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

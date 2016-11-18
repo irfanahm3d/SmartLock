@@ -1,38 +1,47 @@
-﻿using SmartLock.DAL;
+﻿/*
+ * SmartLock
+ * Copyright (c) Irfan Ahmed. 2016
+ */
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Results;
+using SmartLock.DAL.Events;
+using SmartLock.DAL.Lock;
 
 namespace SmartLock.Controllers
 {
     public class LockController : ApiController
     {
         LockDAL lockDal;
+        EventsDAL eventsDal;
 
         public LockController()
         {
-            lockDal = new LockDAL();
+            this.lockDal = new LockDAL();
+            this.eventsDal = new EventsDAL();
         }
 
         // For unit testing purposes
-        internal LockController(LockDAL dal)
+        internal LockController(LockDAL lockDal, EventsDAL eventsDal)
         {
-            lockDal = dal;
+            this.lockDal = lockDal;
+            this.eventsDal = eventsDal;
         }
 
         // GET lock/
         [HttpGet]
         public JsonResult<List<string>> GetLocksState()
         {
-            return Json(lockDal.GetLocksState().ToList());
+            return Json(this.lockDal.GetLocksState().ToList());
         }
 
         // GET lock?lockId=5
         [HttpGet]
         public JsonResult<string> GetLockState([FromUri]int lockId)
         {
-            return Json(lockDal.GetLockState(lockId));
+            return Json(this.lockDal.GetLockState(lockId));
         }
 
         // PUT lock?lockId=5&state=Unlock&userId=12101
@@ -41,7 +50,7 @@ namespace SmartLock.Controllers
         {
             string resultString = string.Empty;
             // authenticate user before attempting to modify lock.
-            if (lockDal.ModifyLockState(lockId, userId, state))
+            if (this.lockDal.ModifyLockState(lockId, userId, state))
             {
                 resultString = state + "ed";
             }
@@ -52,8 +61,9 @@ namespace SmartLock.Controllers
         // POST lock
         // Note: Only Admins can utilize this api
         [HttpPost]
-        public void CreateLock([FromBody]string value)
+        public void CreateLock([FromUri]string lockName, [FromUri]IList<int> allowedUsers)
         {
+            this.lockDal.CreateLock(lockName, allowedUsers);
         }
 
         // DELETE lock/5

@@ -1,19 +1,33 @@
-﻿using System;
+﻿/*
+ * SmartLock
+ * Copyright (c) Irfan Ahmed. 2016
+ */
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Results;
+using SmartLock.DAL.Events;
 
 namespace SmartLock.Controllers
 {
     public class EventsController : ApiController
     {
-        [HttpGet]
-        public JsonResult<string> UserEvents()
+        EventsDAL eventsDal;
+
+        public EventsController()
         {
-            return Json("events");
+            this.eventsDal = new EventsDAL();
+        }
+
+        // For unit testing purposes
+        internal EventsController(EventsDAL eventsDal)
+        {
+            this.eventsDal = eventsDal;
+        }
+        [HttpGet]
+        public JsonResult<IList<string>> UserEvents([FromUri]int userId)
+        {
+            return Json(this.eventsDal.GetUserEvents(userId));
         }
     }
 }

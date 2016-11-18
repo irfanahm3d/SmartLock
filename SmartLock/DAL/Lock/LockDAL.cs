@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿/*
+ * SmartLock
+ * Copyright (c) Irfan Ahmed. 2016
+ */
 
-namespace SmartLock.DAL
+using System.Collections.Generic;
+
+namespace SmartLock.DAL.Lock
 {
     public class LockDAL
     {
@@ -11,7 +13,7 @@ namespace SmartLock.DAL
 
         public LockDAL()
         {
-            lockDataLayer = new LockData();
+            this.lockDataLayer = new LockData();
         }
 
         // unit testing purposes
@@ -27,7 +29,7 @@ namespace SmartLock.DAL
 
         public string GetLockState(int lockId)
         {
-            return lockDataLayer.GetLockState(lockId);
+            return this.lockDataLayer.GetLockState(lockId);
         }
 
         public bool ModifyLockState(int lockId, int userId, string state)
@@ -36,7 +38,12 @@ namespace SmartLock.DAL
             // lock (should happen in data layer).
 
 
-            return lockDataLayer.ModifyLockState(lockId, userId, state);
+            return this.lockDataLayer.ModifyLockState(lockId, userId, state);
+        }
+
+        public bool CreateLock(string lockName, IList<int> allowedUsers)
+        {
+            return this.lockDataLayer.CreateLock(lockName, allowedUsers);
         }
     }
 }
