@@ -6,9 +6,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Web;
 using System.Web.Http;
-using Newtonsoft.Json;
 using SmartLock.Controllers.Contracts;
 using SmartLock.Controllers.Exceptions;
 using SmartLock.DAL.Events;
@@ -21,10 +21,14 @@ namespace SmartLock.Controllers
         EventsDAL eventsDal;
         UserDAL userDal;
 
+        JsonMediaTypeFormatter formatter;
+
         public EventsController()
         {
             this.eventsDal = new EventsDAL();
             this.userDal = new UserDAL();
+
+            this.SetupJsonFormatter();
         }
 
         // For unit testing purposes
@@ -32,6 +36,17 @@ namespace SmartLock.Controllers
         {
             this.eventsDal = eventsDal;
             this.userDal = userDal;
+
+            this.SetupJsonFormatter();
+        }
+
+        void SetupJsonFormatter()
+        {
+            formatter = new JsonMediaTypeFormatter();
+            var json = formatter.SerializerSettings;
+
+            json.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            json.Formatting = Newtonsoft.Json.Formatting.Indented;
         }
 
         [HttpGet]
@@ -62,7 +77,7 @@ namespace SmartLock.Controllers
                 eventsResponse.Message = userException.Message;
             }
 
-            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(eventsResponse));
+            var response = Request.CreateResponse(statusCode, eventsResponse, formatter);
             return response;
         }
     }

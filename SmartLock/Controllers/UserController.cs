@@ -5,9 +5,9 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Web;
 using System.Web.Http;
-using Newtonsoft.Json;
 using SmartLock.Controllers.Contracts;
 using SmartLock.Controllers.Exceptions;
 using SmartLock.DAL.User;
@@ -18,15 +18,30 @@ namespace SmartLock.Controllers
     {
         UserDAL userDal;
 
+        JsonMediaTypeFormatter formatter;
+
         public UserController()
         {
             this.userDal = new UserDAL();
+
+            this.SetupJsonFormatter();
         }
 
         // For unit testing purposes
         internal UserController(UserDAL userDal)
         {
             this.userDal = userDal;
+
+            this.SetupJsonFormatter();
+        }
+
+        void SetupJsonFormatter()
+        {
+            formatter = new JsonMediaTypeFormatter();
+            var json = formatter.SerializerSettings;
+
+            json.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            json.Formatting = Newtonsoft.Json.Formatting.Indented;
         }
 
         [HttpGet]
@@ -55,9 +70,8 @@ namespace SmartLock.Controllers
             {
                 userResponse.Message = userException.Message;
             }
-
-            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(userResponse));
-            return response;
+            
+            return Request.CreateResponse(statusCode, userResponse, formatter);
         }
 
         [HttpPut]
@@ -87,9 +101,8 @@ namespace SmartLock.Controllers
                 userResponse.Message = paramException.Message;
                 statusCode = HttpStatusCode.BadRequest;
             }
-
-            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(userResponse));
-            return response;
+            
+            return Request.CreateResponse(statusCode, userResponse, formatter);
         }
     }
 }

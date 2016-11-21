@@ -21,34 +21,10 @@ namespace SmartLock.Tests.DAL
             {
                 Id = 1,
                 LockId = 30,
-                UserId = 21,
-                State = "Unauthorized",
-                Timestamp = DateTime.UtcNow.AddMinutes(-20)
-            },
-            new UserEvent
-            {
-                Id = 2,
-                LockId = 31,
-                UserId = 22,
-                State = "Unlock",
-                Timestamp = DateTime.UtcNow.AddMinutes(-15)
-            },
-            new UserEvent
-            {
-                Id = 3,
-                LockId = 30,
                 UserId = 20,
                 State = "Lock",
                 Timestamp = DateTime.UtcNow.AddMinutes(-10)
             },
-            new UserEvent
-            {
-                Id = 4,
-                LockId = 31,
-                UserId = 22,
-                State = "Lock",
-                Timestamp = DateTime.UtcNow.AddMinutes(-5)
-            }
         };
 
         public bool CreateEvent(int lockId, int userId, string lockState)

@@ -6,16 +6,15 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Web;
 using System.Web.Http;
-using Newtonsoft.Json;
 using SmartLock.Controllers.Contracts;
 using SmartLock.Controllers.Exceptions;
 using SmartLock.DAL.Events;
 using SmartLock.DAL.Lock;
 using SmartLock.DAL.User;
 using System.Globalization;
-using System.Net.Http.Formatting;
 
 namespace SmartLock.Controllers
 {
@@ -33,7 +32,7 @@ namespace SmartLock.Controllers
             this.eventsDal = new EventsDAL();
             this.userDal = new UserDAL();
 
-            SetupJsonFormatter();
+            this.SetupJsonFormatter();
         }
 
         // For unit testing purposes
@@ -43,17 +42,16 @@ namespace SmartLock.Controllers
             this.eventsDal = eventsDal;
             this.userDal = userDal;
 
-            SetupJsonFormatter();
+            this.SetupJsonFormatter();
         }
 
-        private void SetupJsonFormatter()
+        void SetupJsonFormatter()
         {
             formatter = new JsonMediaTypeFormatter();
             var json = formatter.SerializerSettings;
 
             json.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             json.Formatting = Newtonsoft.Json.Formatting.Indented;
-
         }
 
         // GET lock/
@@ -99,7 +97,7 @@ namespace SmartLock.Controllers
                 lockResponse.Message = lockException.Message;
             }
 
-            return Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse), formatter);
+            return Request.CreateResponse(statusCode, lockResponse, formatter);
         }
 
         // PUT lock?lockId=5&state=Unlock&userId=12101
@@ -153,7 +151,7 @@ namespace SmartLock.Controllers
                 }
             }
             
-            return Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
+            return Request.CreateResponse(statusCode, lockResponse, formatter);
         }
 
         // PUT lock
@@ -167,16 +165,17 @@ namespace SmartLock.Controllers
             try
             {
                 LockParameters parameters = LockParameters.ParsePutLockParameters(HttpContext.Current.Request.QueryString);
-                lockResponse.UserId = parameters.UserId;
-
+                
                 // Check if the user exists.
                 UserModel user = this.userDal.GetUser(parameters.UserId);
+                lockResponse.UserId = parameters.UserId;
 
                 // Check if users specified in access list exist.
                 foreach (int allowedUser in parameters.AllowedUsers)
                 {
                     this.userDal.GetUser(allowedUser);
                 }
+
 
                 // If the user is an admin they can create a lock with an access list.
                 if (user.IsAdmin)
@@ -187,6 +186,10 @@ namespace SmartLock.Controllers
                         lockResponse.Message = "Failed to create the lock.";
                     }
 
+                    lockResponse.LockState = lockModel.State;
+                    lockResponse.LockId = lockModel.LockId;
+                    lockResponse.LockName = parameters.LockName;
+                    lockResponse.AllowedUsers = parameters.AllowedUsers;
                     lockResponse.Message = "Lock created successfully.";
                 }
                 else
@@ -205,7 +208,7 @@ namespace SmartLock.Controllers
                 lockResponse.Message = userException.Message;
             }
             
-            return Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
+            return Request.CreateResponse(statusCode, lockResponse, formatter);
         }
 
         // DELETE lock/5

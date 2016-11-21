@@ -80,7 +80,6 @@ namespace SmartLock.Tests.DAL
                 UserId = 22,
                 LockId = 32
             },
-
             new LockAccess
             {
                 Id = 6,
