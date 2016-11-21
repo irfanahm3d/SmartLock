@@ -50,6 +50,20 @@ namespace SmartLock.Controllers.Contracts
             };
         }
 
+        public static LockParameters ParseGetLocksParameters(NameValueCollection queryParameters)
+        {
+            int userId = 0;
+            if (!Int32.TryParse(queryParameters["userId"], out userId))
+            {
+                throw new InvalidParameterException("userId");
+            }
+
+            return new LockParameters
+            {
+                UserId = userId
+            };
+        }
+
         public static LockParameters ParsePostLockParameters(NameValueCollection queryParameters)
         {
             int lockId = 0;

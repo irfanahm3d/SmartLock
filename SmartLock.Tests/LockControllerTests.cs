@@ -25,16 +25,125 @@ namespace SmartLock.Tests
     public class LockControllerTests
     {
         LockController lockController;
+        MockLockData mockLockData = new MockLockData();
         MockEventsData mockEventsData = new MockEventsData();
 
         [TestInitialize]
         public void TestInitialize()
         {
-            var mockLockDal = new LockDAL(new MockLockData());
+            var mockLockDal = new LockDAL(mockLockData);
             var mockEventsDal = new EventsDAL(mockEventsData);
             var mockUserDal = new UserDAL(new MockUserData());
 
             lockController = new LockController(mockLockDal, mockEventsDal, mockUserDal);
+        }
+
+        [TestMethod]
+        public void GetLocksTests()
+        {
+            var expectedLocks = new List<LockContract>
+            {
+                new LockContract
+                {
+                    LockId = 30,
+                    Name = "Office entrance",
+                    State = "Locked"
+                },
+                new LockContract
+                {
+                    LockId = 31,
+                    Name = "Tunnel",
+                    State = "Locked"
+                },
+                new LockContract
+                {
+                    LockId = 32,
+                    Name = "Main door",
+                    State = "Locked"
+                },
+            };
+            
+            var testScenarios = new[]
+            {
+                new
+                {
+                    Name = "UserId - Success",
+                    QueryString = "userId=20",
+                    ExpectedStatusCode = HttpStatusCode.OK,
+                    ExpectedUserId = 20,
+                    ExpectedLocks = expectedLocks,
+                    ExpectedMessage = "List of locks."
+                },
+                new
+                {
+                    Name = "User not found - Failure",
+                    QueryString = "userId=25",
+                    ExpectedStatusCode = HttpStatusCode.OK,
+                    ExpectedUserId = 25,
+                    ExpectedLocks = new List<LockContract>(),
+                    ExpectedMessage = "Not found."
+                },
+                new
+                {
+                    Name = "UserId parameter invalid - Failure",
+                    QueryString = "userd=20",
+                    ExpectedStatusCode = HttpStatusCode.BadRequest,
+                    ExpectedUserId = 0,
+                    ExpectedLocks = new List<LockContract>(),
+                    ExpectedMessage = "Parameter userId not found or is invalid."
+                },
+                new
+                {
+                    Name = "UserId parameter value invalid - Failure",
+                    QueryString = "lockId=30&userId=Ryan",
+                    ExpectedStatusCode = HttpStatusCode.BadRequest,
+                    ExpectedUserId = 0,
+                    ExpectedLocks = new List<LockContract>(),
+                    ExpectedMessage = "Parameter userId not found or is invalid."
+                },
+
+            };
+
+            foreach (var testScenario in testScenarios)
+            {
+                System.Console.WriteLine(testScenario.Name);
+
+                lockController.Request = new HttpRequestMessage();
+                lockController.Configuration = new HttpConfiguration();
+                HttpContext.Current = new HttpContext(
+                    new HttpRequest(null, "http://localhost/locks", testScenario.QueryString), new HttpResponse(null));
+
+                // Act
+                var response = lockController.GetLocks();
+
+                // Assert
+                Assert.IsNotNull(response, "Response should not be null");
+                Assert.AreEqual(testScenario.ExpectedStatusCode, response.StatusCode, "Status code is not expected");
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var content = response.Content.ReadAsStringAsync();
+                    var locksResponse = JsonConvert.DeserializeObject<LocksResponseContract>(content.Result);
+                    Assert.AreEqual(testScenario.ExpectedUserId, locksResponse.UserId, "UserId");
+
+                    if (testScenario.ExpectedLocks.Count > 0)
+                    {
+                        Assert.AreEqual(testScenario.ExpectedLocks.Count, locksResponse.Locks.Count, "Locks count");
+                        for(int idx = 0; idx < testScenario.ExpectedLocks.Count; idx++)
+                        {
+                            Assert.AreEqual(testScenario.ExpectedLocks[idx].LockId, locksResponse.Locks[idx].LockId, "LockId");
+                            Assert.AreEqual(testScenario.ExpectedLocks[idx].Name, locksResponse.Locks[idx].Name, "Name");
+                            Assert.AreEqual(testScenario.ExpectedLocks[idx].State, locksResponse.Locks[idx].State, "State");
+                        }
+                    }
+                    else
+                    {
+                        Assert.IsNull(locksResponse.Locks, "Locks should be null");
+                    }
+
+                    Assert.AreEqual(testScenario.ExpectedMessage, locksResponse.Message, "Response Message");
+                }
+            }
         }
 
         [TestMethod]
@@ -331,7 +440,7 @@ namespace SmartLock.Tests
                     QueryString = "userId=21&lockName=Main+door&allowedUsers=21",
                     ExpectedStatusCode = HttpStatusCode.Unauthorized,
                     ExpectedLockId = 0,
-                    ExpectedUserId = 0,
+                    ExpectedUserId = 21,
                     ExpectedLockName = "",
                     ExpectedLockState = "",
                     ExpectedAllowedUsers = new List<int>(),
@@ -343,7 +452,7 @@ namespace SmartLock.Tests
                     QueryString = "userId=25&lockName=Main+door&allowedUsers=25",
                     ExpectedStatusCode = HttpStatusCode.OK,
                     ExpectedLockId = 0,
-                    ExpectedUserId = 0,
+                    ExpectedUserId = 25,
                     ExpectedLockName = "",
                     ExpectedLockState = "",
                     ExpectedAllowedUsers = new List<int>(),

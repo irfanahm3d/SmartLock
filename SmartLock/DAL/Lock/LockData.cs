@@ -27,6 +27,7 @@ namespace SmartLock.DAL.Lock
                     locksList.Add(
                         new LockModel
                         {
+                            LockId = element.LockId,
                             Name = element.Name,
                             State = element.State
                         });

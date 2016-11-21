@@ -13,17 +13,17 @@ namespace SmartLock.Controllers.Contracts
     {
         [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public int LockId { get; set; }
-        
+
         [JsonProperty("userId", NullValueHandling = NullValueHandling.Include)]
         public int UserId { get; set; }
-        
+
         [JsonProperty("state", NullValueHandling = NullValueHandling.Ignore)]
         public string LockState { get; set; }
-        
+
         [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string LockName { get; set; }
-        
+
         [JsonProperty("allowedUsers", NullValueHandling = NullValueHandling.Ignore)]
-        public IList<int> AllowedUsers { get; set; }        
+        public IList<int> AllowedUsers { get; set; }
     }
 }

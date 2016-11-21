@@ -4,6 +4,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -14,7 +16,6 @@ using SmartLock.Controllers.Exceptions;
 using SmartLock.DAL.Events;
 using SmartLock.DAL.Lock;
 using SmartLock.DAL.User;
-using System.Globalization;
 
 namespace SmartLock.Controllers
 {
@@ -55,11 +56,37 @@ namespace SmartLock.Controllers
         }
 
         // GET lock/
-        //[HttpGet]
-        ////public JsonResult<List<string>> GetLocks()
-        ////{
-        ////    return Json(this.lockDal.GetLocks().ToList());
-        ////}
+        [HttpGet]
+        [Route("locks")]
+        public HttpResponseMessage GetLocks()
+        {
+            var statusCode = HttpStatusCode.OK;
+            var locksResponse = new LocksResponseContract();
+
+            try
+            {
+                LockParameters parameters = LockParameters.ParseGetLocksParameters(HttpContext.Current.Request.QueryString);
+                locksResponse.UserId = parameters.UserId;
+
+                // Check if the user exists.
+                this.userDal.GetUser(parameters.UserId);
+
+                IList<LockModel> locks = this.lockDal.GetLocks();
+                locksResponse.Locks = locksResponse.ConvertToContract(locks);
+                locksResponse.Message = "List of locks.";
+            }
+            catch (InvalidParameterException paramException)
+            {
+                locksResponse.Message = paramException.Message;
+                statusCode = HttpStatusCode.BadRequest;
+            }
+            catch (UserNotFoundException userException)
+            {
+                locksResponse.Message = userException.Message;
+            }
+
+            return Request.CreateResponse(statusCode, locksResponse, formatter);
+        }
 
         // GET lock?lockId=5
         [HttpGet]
@@ -165,17 +192,16 @@ namespace SmartLock.Controllers
             try
             {
                 LockParameters parameters = LockParameters.ParsePutLockParameters(HttpContext.Current.Request.QueryString);
-                
+                lockResponse.UserId = parameters.UserId;
+
                 // Check if the user exists.
                 UserModel user = this.userDal.GetUser(parameters.UserId);
-                lockResponse.UserId = parameters.UserId;
 
                 // Check if users specified in access list exist.
                 foreach (int allowedUser in parameters.AllowedUsers)
                 {
                     this.userDal.GetUser(allowedUser);
                 }
-
 
                 // If the user is an admin they can create a lock with an access list.
                 if (user.IsAdmin)

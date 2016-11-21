@@ -138,7 +138,14 @@ namespace SmartLock.Tests.DAL
 
         public IList<LockModel> GetLocks()
         {
-            throw new NotImplementedException();
+            return this.LockData.Values.Select(
+                l =>
+                    new LockModel
+                    {
+                        LockId = l.LockId,
+                        Name = l.Name,
+                        State = l.State
+                    }).ToList();
         }
 
         public string GetLockState(int lockId)

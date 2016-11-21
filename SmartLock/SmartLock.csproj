@@ -130,6 +130,7 @@
     <Compile Include="Controllers\Contracts\EventsParameters.cs" />
     <Compile Include="Controllers\Contracts\EventsResponseContract.cs" />
     <Compile Include="Controllers\Contracts\LockResponseContract.cs" />
+    <Compile Include="Controllers\Contracts\LocksResponseContract.cs" />
     <Compile Include="Controllers\Contracts\ResponseContractBase.cs" />
     <Compile Include="Controllers\Contracts\UserParameters.cs" />
     <Compile Include="Controllers\Contracts\UserResponseContract.cs" />
