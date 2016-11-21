@@ -31,7 +31,7 @@ namespace SmartLock.DAL.Events
             }
         }
 
-        public IList<string> GetUserEvents(int userId)
+        public IList<EventModel> GetUserEvents(int userId)
         {
             using (var smartLock = new SmartLockEntities())
             {
@@ -39,16 +39,16 @@ namespace SmartLock.DAL.Events
                             where events.UserId == userId
                             select events;
 
-                var eventsList = new List<string>();
+                var eventsList = new List<EventModel>();
                 foreach(var element in query)
                 {
                     eventsList.Add(
-                        String.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0};{1};{2}",
-                            element.LockId,
-                            element.Timestamp,
-                            element.State));
+                        new EventModel
+                        {
+                            LockId = element.LockId,
+                            Timestamp = element.Timestamp,
+                            State = element.State
+                        });
                 }
                 return eventsList;
             }

@@ -9,10 +9,10 @@ namespace SmartLock.DAL.User
 {
     public interface IUserData
     {
-        void CreateUser(string userName, string userEmail, string userPassword, bool isAdmin);
+        int CreateUser(string userName, string userEmail, string userPassword, bool isAdmin);
 
-        string GetUser(string userEmail, string userPassword);
+        UserModel GetUser(string userEmail, string userPassword);
 
-        string GetUser(int userId);
+        UserModel GetUser(int userId);
     }
 }

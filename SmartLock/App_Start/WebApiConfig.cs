@@ -13,6 +13,7 @@ namespace SmartLock
 
             // Web API routes
             config.MapHttpAttributeRoutes();
+            config.Formatters.Remove(config.Formatters.XmlFormatter);
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",

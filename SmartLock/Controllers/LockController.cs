@@ -4,13 +4,17 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web;
 using System.Web.Http;
-using System.Web.Http.Results;
+using Newtonsoft.Json;
+using SmartLock.Controllers.Contracts;
+using SmartLock.Controllers.Exceptions;
 using SmartLock.DAL.Events;
 using SmartLock.DAL.Lock;
 using SmartLock.DAL.User;
+using System.Globalization;
 
 namespace SmartLock.Controllers
 {
@@ -36,81 +40,159 @@ namespace SmartLock.Controllers
         }
 
         // GET lock/
-        [HttpGet]
-        public JsonResult<List<string>> GetLocks()
-        {
-            return Json(this.lockDal.GetLocks().ToList());
-        }
+        //[HttpGet]
+        ////public JsonResult<List<string>> GetLocks()
+        ////{
+        ////    return Json(this.lockDal.GetLocks().ToList());
+        ////}
 
         // GET lock?lockId=5
         [HttpGet]
-        public JsonResult<string> GetLockState([FromUri]int lockId)
+        public HttpResponseMessage GetLockState()
         {
-            string result = String.Empty;
+            var statusCode = HttpStatusCode.OK;
+            var lockResponse = new LockResponseContract();
+
             try
             {
-                result = this.lockDal.GetLockState(lockId);
-            }
-            catch (Exception)
-            {
-                result = "Not found";
-            }
+                LockParameters parameters = LockParameters.ParseGetLockParameters(HttpContext.Current.Request.QueryString);
+                lockResponse.LockId = parameters.LockId;
+                lockResponse.UserId = parameters.UserId;
 
-            return Json(result);
+                // Check to see if the user exists.
+                this.userDal.GetUser(parameters.UserId);
+
+                lockResponse.LockState = this.lockDal.GetLockState(parameters.LockId);
+                lockResponse.Message = "State of lock.";
+            }
+            catch (InvalidParameterException paramException)
+            {
+                lockResponse.Message = paramException.Message;
+                statusCode = HttpStatusCode.BadRequest;
+            }
+            // We do not want to give information on what input is incorrect. 
+            // Keeping the response generic so that malicious intent is not
+            // provided with too much information.
+            catch (UserNotFoundException userException)
+            {
+                lockResponse.Message = userException.Message;
+            }
+            catch (LockNotFoundException lockException)
+            {
+                lockResponse.Message = lockException.Message;
+            }
+                        
+            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
+            return response;
         }
 
         // PUT lock?lockId=5&state=Unlock&userId=12101
         [HttpPost]
-        public JsonResult<string> ModifyLockState(int lockId, [FromUri]int userId, [FromUri]string state)
+        public HttpResponseMessage ModifyLockState()
         {
-            bool result = false;
-            string finalState = String.Empty;
-            
+            bool? result = null;
+            LockParameters parameters = null;
+            var statusCode = HttpStatusCode.OK;
+            var lockResponse = new LockResponseContract();
+
             try
             {
-                this.userDal.GetUser(userId);
-                result = this.lockDal.ModifyLockState(lockId, userId, state);
-                finalState = result ? state : "Failed";
+                parameters = LockParameters.ParsePostLockParameters(HttpContext.Current.Request.QueryString);
+                lockResponse.LockId = parameters.LockId;
+                lockResponse.UserId = parameters.UserId;
+
+                // Check to see if the user exists.
+                this.userDal.GetUser(parameters.UserId);
+                
+                result = this.lockDal.ModifyLockState(parameters.LockId, parameters.UserId, parameters.LockState);
+                lockResponse.LockState = result.Value ? parameters.LockState : "Failed";
+
+                lockResponse.Message = result.Value ?
+                    String.Format(CultureInfo.InvariantCulture, "Door {0}ed successfully.", parameters.LockState) :
+                    String.Format(CultureInfo.InvariantCulture, "Door {0} failed.", parameters.LockState); 
             }
-            catch (Exception)
+            catch (InvalidParameterException paramException)
             {
-                finalState = "Unauthorized";
+                lockResponse.Message = paramException.Message;
+                statusCode = HttpStatusCode.BadRequest;
+            }
+            catch (UserNotFoundException userException)
+            {
+                lockResponse.Message = userException.Message;
+            }
+            catch (UnauthorizedUserException userAuthException)
+            {
+                lockResponse.Message = userAuthException.Message;
+                statusCode = HttpStatusCode.Unauthorized;
+            }
+            catch (LockNotFoundException lockException)
+            {
+                lockResponse.Message = lockException.Message;
             }
             finally
             {
-                this.eventsDal.CreateEvent(lockId, userId, finalState);
+                if (result != null)
+                {
+                    this.eventsDal.CreateEvent(parameters.LockId, parameters.UserId, lockResponse.LockState);
+                }
             }
 
-            return Json(finalState);
+            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
+            return response;
         }
 
-        // POST lock
+        // PUT lock
         // Note: Only Admins can utilize this api
-        [HttpPost]
-        public JsonResult<string> CreateLock([FromUri]string lockName, [FromUri]int currentUserId, [FromUri]IList<int> allowedUsers)
+        [HttpPut]
+        public HttpResponseMessage CreateLock()
         {
+            var statusCode = HttpStatusCode.OK;
+            var lockResponse = new LockResponseContract();
             string result = String.Empty;
+            
             try
             {
-                string userInfo = this.userDal.GetUser(currentUserId);
-                string[] tokens = userInfo.Split(';');
-                if (Boolean.Parse(tokens[2]))
+                LockParameters parameters = LockParameters.ParsePutLockParameters(HttpContext.Current.Request.QueryString);
+                lockResponse.UserId = parameters.UserId;
+
+                // Check if the user exists.
+                UserModel user = this.userDal.GetUser(parameters.UserId);
+
+                // Check if users specified in access list exist.
+                foreach (int allowedUser in parameters.AllowedUsers)
                 {
-                    result =
-                        this.lockDal.CreateLock(lockName, allowedUsers) ?
-                        "Created" : "Failed";
+                    this.userDal.GetUser(allowedUser);
+                }
+
+                // If the user is an admin they can create a lock with an access list.
+                if (user.IsAdmin)
+                {
+                    LockModel lockModel = this.lockDal.CreateLock(parameters.LockName, parameters.AllowedUsers);
+                    if (lockModel == null)
+                    {
+                        lockResponse.Message = "Failed to create the lock.";
+                    }
+
+                    lockResponse.Message = "Lock created successfully.";
                 }
                 else
                 {
-                    result = "Unauthorized";
+                    lockResponse.Message = "User unauthorized.";
+                    statusCode = HttpStatusCode.Unauthorized;
                 }
             }
-            catch (Exception)
+            catch (InvalidParameterException paramException)
             {
-                result = "Not found";
+                lockResponse.Message = paramException.Message;
+                statusCode = HttpStatusCode.BadRequest;
+            }
+            catch (UserNotFoundException userException)
+            {
+                lockResponse.Message = userException.Message;
             }
 
-            return Json(result);
+            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
+            return response;
         }
 
         // DELETE lock/5

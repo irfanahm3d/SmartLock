@@ -27,7 +27,7 @@ namespace SmartLock.DAL.Events
             return this.eventsDataLayer.CreateEvent(lockId, userId, lockState);
         }
 
-        public IList<string> GetUserEvents(int userId)
+        public IList<EventModel> GetUserEvents(int userId)
         {
             return this.eventsDataLayer.GetUserEvents(userId);
         }

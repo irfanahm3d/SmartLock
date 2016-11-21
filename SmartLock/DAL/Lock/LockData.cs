@@ -8,27 +8,28 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using SmartLock.Models;
+using SmartLock.Controllers.Exceptions;
 
 namespace SmartLock.DAL.Lock
 {
     public class LockData : ILockData
     {
-        public IList<string> GetLocks()
+        public IList<LockModel> GetLocks()
         {
             using (var smartLock = new SmartLockEntities())
             {
                 var query = from locks in smartLock.LockInfoes
                             select locks;
 
-                var locksList = new List<string>();
+                var locksList = new List<LockModel>();
                 foreach(LockInfo element in query)
                 {
                     locksList.Add(
-                        String.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0};{1}",
-                            element.Name,
-                            element.State));
+                        new LockModel
+                        {
+                            Name = element.Name,
+                            State = element.State
+                        });
                 }
 
                 return locksList;
@@ -43,7 +44,7 @@ namespace SmartLock.DAL.Lock
 
                 if (lockInfo == null)
                 {
-                    throw new ArgumentException("lockId");
+                    throw new LockNotFoundException("lockId");
                 }
 
                 return lockInfo.State;
@@ -54,6 +55,13 @@ namespace SmartLock.DAL.Lock
         {
             using (var smartLock = new SmartLockEntities())
             {
+                LockInfo lockInfo = smartLock.LockInfoes.FirstOrDefault(l => l.LockId == lockId);
+                if (lockInfo == null)
+                {
+                    // lock not found.
+                    throw new LockNotFoundException("Lock not found.");
+                }
+
                 LockAccess lockAccess = 
                     smartLock.LockAccesses.FirstOrDefault(l => l.UserId == userId && l.LockId == lockId);
 
@@ -61,10 +69,10 @@ namespace SmartLock.DAL.Lock
                 if (lockAccess == null)
                 {
                     // user does not have access to the lock. Throw exception.
-                    throw new ArgumentException("userId");
+                    throw new UnauthorizedUserException("User unauthorized.");
                 }
                 
-                LockInfo lockInfo = smartLock.LockInfoes.FirstOrDefault(l => l.LockId == lockId);
+                // modify lock state.
                 lockInfo.State = state;
 
                 int changes = smartLock.SaveChanges();                
@@ -72,7 +80,7 @@ namespace SmartLock.DAL.Lock
             }
         }
 
-        public bool CreateLock(string lockName, IList<int> allowedUsers)
+        public LockModel CreateLock(string lockName, IList<int> allowedUsers)
         {
             using (var smartLock = new SmartLockEntities())
             {
@@ -93,7 +101,18 @@ namespace SmartLock.DAL.Lock
                     changes += smartLock.SaveChanges();
                 }
 
-                return (changes == allowedUsers.Count + 1) ? true : false;
+                if (changes == allowedUsers.Count + 1)
+                {
+                    return new LockModel
+                    {
+                        LockId = lockInfo.LockId,
+                        Name = lockName,
+                        State = lockInfo.State,
+                        AllowedUsers = allowedUsers
+                    };
+                }
+
+                return null;
             }
         }
 

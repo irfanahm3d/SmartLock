@@ -20,17 +20,17 @@ namespace SmartLock.DAL.User
             this.userDataLayer = userData;
         }
 
-        public void CreateUser(string userName, string userEmail, string userPassword, bool isAdmin)
+        public int CreateUser(string userName, string userEmail, string userPassword, bool isAdmin)
         {
-            this.userDataLayer.CreateUser(userName, userEmail, userPassword, isAdmin);
+            return this.userDataLayer.CreateUser(userName, userEmail, userPassword, isAdmin);
         }
 
-        public string GetUser(string userEmail, string userPassword)
+        public UserModel GetUser(string userEmail, string userPassword)
         {
             return this.userDataLayer.GetUser(userEmail, userPassword);
         }
 
-        public string GetUser(int userId)
+        public UserModel GetUser(int userId)
         {
             return this.userDataLayer.GetUser(userId);
         }

@@ -11,6 +11,6 @@ namespace SmartLock.DAL.Events
     {
         bool CreateEvent(int lockId, int userId, string lockState);
 
-        IList<string> GetUserEvents(int userId);
+        IList<EventModel> GetUserEvents(int userId);
     }
 }

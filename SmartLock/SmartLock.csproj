@@ -127,18 +127,32 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Contracts\EventsParameters.cs" />
+    <Compile Include="Controllers\Contracts\EventsResponseContract.cs" />
+    <Compile Include="Controllers\Contracts\LockResponseContract.cs" />
+    <Compile Include="Controllers\Contracts\ResponseContractBase.cs" />
+    <Compile Include="Controllers\Contracts\UserParameters.cs" />
+    <Compile Include="Controllers\Contracts\UserResponseContract.cs" />
     <Compile Include="Controllers\EventsController.cs" />
+    <Compile Include="Controllers\Exceptions\InvalidParameterException.cs" />
+    <Compile Include="Controllers\Exceptions\LockNotFoundException.cs" />
+    <Compile Include="Controllers\Exceptions\UserNotFoundException.cs" />
+    <Compile Include="Controllers\Exceptions\UnauthorizedUserException.cs" />
     <Compile Include="Controllers\LockController.cs" />
+    <Compile Include="Controllers\Contracts\LockParameters.cs" />
     <Compile Include="Controllers\UserController.cs" />
+    <Compile Include="DAL\Events\EventModel.cs" />
     <Compile Include="DAL\Events\EventsDAL.cs" />
     <Compile Include="DAL\Events\EventsData.cs" />
     <Compile Include="DAL\Events\IEventsData.cs" />
     <Compile Include="DAL\Lock\ILockData.cs" />
     <Compile Include="DAL\Lock\LockDAL.cs" />
     <Compile Include="DAL\Lock\LockData.cs" />
+    <Compile Include="DAL\Lock\LockModel.cs" />
     <Compile Include="DAL\User\UserDAL.cs" />
     <Compile Include="DAL\User\UserData.cs" />
     <Compile Include="DAL\User\IUserData.cs" />
+    <Compile Include="DAL\User\UserModel.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

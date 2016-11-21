@@ -9,13 +9,13 @@ namespace SmartLock.DAL.Lock
 {
     interface ILockData
     {
-        IList<string> GetLocks();
+        IList<LockModel> GetLocks();
 
         string GetLockState(int lockId);
 
         bool ModifyLockState(int lockId, int userId, string state);
 
-        bool CreateLock(string lockName, IList<int> allowedUsers);
+        LockModel CreateLock(string lockName, IList<int> allowedUsers);
 
         bool CreateUserAccess(int lockId, IList<int> allowedUsers);
     }

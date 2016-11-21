@@ -13,29 +13,33 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using SmartLock.Models;
+using SmartLock.Controllers.Exceptions;
 
 namespace SmartLock.DAL.User
 {
     public class UserData : IUserData
     {
-        public void CreateUser(string userName, string userEmail, string userPassword, bool isAdmin)
+        public int CreateUser(string userName, string userEmail, string userPassword, bool isAdmin)
         {
             var hashedPassword = this.GetSHA256Password(userPassword);
             using (var smartLock = new SmartLockEntities())
             {
-                smartLock.UserInfoes.Add(
-                    new UserInfo
-                    {
-                        UserName = userName,
-                        Email = userEmail,
-                        Password = hashedPassword,
-                        IsAdmin = isAdmin
-                    });
+                var userInfo = new UserInfo
+                {
+                    UserName = userName,
+                    Email = userEmail,
+                    Password = hashedPassword,
+                    IsAdmin = isAdmin
+                };
+
+                smartLock.UserInfoes.Add(userInfo);
                 smartLock.SaveChanges();
+
+                return userInfo.UserId;
             }
         }
 
-        public string GetUser(string userEmail, string userPassword)
+        public UserModel GetUser(string userEmail, string userPassword)
         {
             var hashedPassword = this.GetSHA256Password(userPassword);
             using (var smartLock = new SmartLockEntities())
@@ -47,16 +51,20 @@ namespace SmartLock.DAL.User
                 UserInfo user = query.FirstOrDefault();
                 if (user == null)
                 {
-                    throw new ArgumentException("user");
+                    throw new UserNotFoundException("Not found.");
                 }
 
-
-                return String.Format(
-                    CultureInfo.InvariantCulture, "{0};{1};{2}", user.UserId, user.UserName, user.IsAdmin);
+                return new UserModel
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    IsAdmin = user.IsAdmin
+                };
             }
         }
 
-        public string GetUser(int userId)
+        public UserModel GetUser(int userId)
         {
             using (var smartLock = new SmartLockEntities())
             {
@@ -68,11 +76,15 @@ namespace SmartLock.DAL.User
 
                 if (user == null)
                 {
-                    throw new ArgumentException("userId");
+                    throw new UserNotFoundException("Not found.");
                 }
 
-                return String.Format(
-                    CultureInfo.InvariantCulture, "{0};{1};{2}", user.UserId, user.UserName, user.IsAdmin);
+                return new UserModel
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    IsAdmin = user.IsAdmin
+                };
             }
         }
 
