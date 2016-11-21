@@ -271,6 +271,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 32,
                     ExpectedUserId = 21,
                     ExpectedLockState = "Unlock",
+                    ExpectedEventState = "Unlock",
                     ExpectedMessage = "Door Unlocked successfully."
                 },
                 new
@@ -281,6 +282,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 30,
                     ExpectedUserId = 22,
                     ExpectedLockState = "Lock",
+                    ExpectedEventState = "Lock",
                     ExpectedMessage = "Door Locked successfully."
                 },
                 new
@@ -291,6 +293,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 30,
                     ExpectedUserId = 21,
                     ExpectedLockState = "",
+                    ExpectedEventState = "Unauthorized",
                     ExpectedMessage = "User unauthorized."
                 },
                 new
@@ -301,6 +304,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 35,
                     ExpectedUserId = 20,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Not found."
                 },
                 new
@@ -311,6 +315,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 30,
                     ExpectedUserId = 25,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Not found."
                 },
                 new
@@ -321,6 +326,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 0,
                     ExpectedUserId = 0,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Parameter lockId not found or is invalid."
                 },
                 new
@@ -331,6 +337,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 0,
                     ExpectedUserId = 0,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Parameter lockId not found or is invalid."
                 },
                 new
@@ -341,6 +348,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 0,
                     ExpectedUserId = 0,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Parameter userId not found or is invalid."
                 },
                 new
@@ -351,6 +359,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 0,
                     ExpectedUserId = 0,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Parameter userId not found or is invalid."
                 },
                 new
@@ -361,6 +370,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 0,
                     ExpectedUserId = 0,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Parameter lockState not found or is invalid."
                 },
                 new
@@ -371,6 +381,7 @@ namespace SmartLock.Tests
                     ExpectedLockId = 0,
                     ExpectedUserId = 0,
                     ExpectedLockState = "",
+                    ExpectedEventState = "",
                     ExpectedMessage = "Parameter lockState not found or is invalid."
                 },
 
@@ -403,15 +414,19 @@ namespace SmartLock.Tests
                     if (!String.IsNullOrWhiteSpace(testScenario.ExpectedLockState))
                     {
                         expectedLockState = testScenario.ExpectedLockState;
+                    }
+                    Assert.AreEqual(expectedLockState, lockResponse.LockState, "LockState");
 
+                    if(!String.IsNullOrWhiteSpace(testScenario.ExpectedEventState))
+                    {
                         // check if the corresponding user event was added.
-                        EventModel userEvent = 
+                        EventModel userEvent =
                             mockEventsData.GetUserEvents(testScenario.ExpectedUserId).SingleOrDefault();
 
                         Assert.AreEqual(testScenario.ExpectedLockId, userEvent.LockId, "Event LockId");
-                        Assert.AreEqual(testScenario.ExpectedLockState, userEvent.State, "Event LockState");
+                        Assert.AreEqual(testScenario.ExpectedEventState, userEvent.State, "Event State");
                     }
-                    Assert.AreEqual(expectedLockState, lockResponse.LockState, "LockState");
+
                     Assert.AreEqual(testScenario.ExpectedMessage, lockResponse.Message, "Response Message");
                 }
             }

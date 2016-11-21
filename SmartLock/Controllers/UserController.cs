@@ -60,6 +60,7 @@ namespace SmartLock.Controllers
                 userResponse.UserName = user.UserName;
                 userResponse.Email = user.Email;
                 userResponse.IsAdmin = user.IsAdmin;
+                userResponse.Message = "User found.";
             }
             catch (InvalidParameterException paramException)
             {
@@ -74,7 +75,9 @@ namespace SmartLock.Controllers
             return Request.CreateResponse(statusCode, userResponse, formatter);
         }
 
-        [HttpPut]
+        // Commenting out the HttpMethod attribute so that the method is
+        // inaccessible.
+        ////[HttpPut]
         HttpResponseMessage CreateUser()
         {
             var statusCode = HttpStatusCode.OK;

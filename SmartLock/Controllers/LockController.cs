@@ -150,7 +150,9 @@ namespace SmartLock.Controllers
 
                 lockResponse.Message = result.Value ?
                     String.Format(CultureInfo.InvariantCulture, "Door {0}ed successfully.", parameters.LockState) :
-                    String.Format(CultureInfo.InvariantCulture, "Door {0} failed.", parameters.LockState); 
+                    String.Format(CultureInfo.InvariantCulture, "Door {0} failed.", parameters.LockState);
+
+                this.eventsDal.CreateEvent(parameters.LockId, parameters.UserId, lockResponse.LockState);
             }
             catch (InvalidParameterException paramException)
             {
@@ -165,17 +167,12 @@ namespace SmartLock.Controllers
             {
                 lockResponse.Message = userAuthException.Message;
                 statusCode = HttpStatusCode.Unauthorized;
+
+                this.eventsDal.CreateEvent(parameters.LockId, parameters.UserId, "Unauthorized");
             }
             catch (LockNotFoundException lockException)
             {
                 lockResponse.Message = lockException.Message;
-            }
-            finally
-            {
-                if (result != null)
-                {
-                    this.eventsDal.CreateEvent(parameters.LockId, parameters.UserId, lockResponse.LockState);
-                }
             }
             
             return Request.CreateResponse(statusCode, lockResponse, formatter);
