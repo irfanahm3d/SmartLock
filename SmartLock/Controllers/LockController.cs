@@ -15,6 +15,7 @@ using SmartLock.DAL.Events;
 using SmartLock.DAL.Lock;
 using SmartLock.DAL.User;
 using System.Globalization;
+using System.Net.Http.Formatting;
 
 namespace SmartLock.Controllers
 {
@@ -24,11 +25,15 @@ namespace SmartLock.Controllers
         UserDAL userDal;
         EventsDAL eventsDal;
 
+        JsonMediaTypeFormatter formatter;
+
         public LockController()
         {
             this.lockDal = new LockDAL();
             this.eventsDal = new EventsDAL();
             this.userDal = new UserDAL();
+
+            SetupJsonFormatter();
         }
 
         // For unit testing purposes
@@ -37,6 +42,18 @@ namespace SmartLock.Controllers
             this.lockDal = lockDal;
             this.eventsDal = eventsDal;
             this.userDal = userDal;
+
+            SetupJsonFormatter();
+        }
+
+        private void SetupJsonFormatter()
+        {
+            formatter = new JsonMediaTypeFormatter();
+            var json = formatter.SerializerSettings;
+
+            json.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            json.Formatting = Newtonsoft.Json.Formatting.Indented;
+
         }
 
         // GET lock/
@@ -81,9 +98,8 @@ namespace SmartLock.Controllers
             {
                 lockResponse.Message = lockException.Message;
             }
-                        
-            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
-            return response;
+
+            return Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse), formatter);
         }
 
         // PUT lock?lockId=5&state=Unlock&userId=12101
@@ -105,7 +121,7 @@ namespace SmartLock.Controllers
                 this.userDal.GetUser(parameters.UserId);
                 
                 result = this.lockDal.ModifyLockState(parameters.LockId, parameters.UserId, parameters.LockState);
-                lockResponse.LockState = result.Value ? parameters.LockState : "Failed";
+                lockResponse.LockState = result.Value ? parameters.LockState.ToString() : "Failed";
 
                 lockResponse.Message = result.Value ?
                     String.Format(CultureInfo.InvariantCulture, "Door {0}ed successfully.", parameters.LockState) :
@@ -136,9 +152,8 @@ namespace SmartLock.Controllers
                     this.eventsDal.CreateEvent(parameters.LockId, parameters.UserId, lockResponse.LockState);
                 }
             }
-
-            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
-            return response;
+            
+            return Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
         }
 
         // PUT lock
@@ -148,7 +163,6 @@ namespace SmartLock.Controllers
         {
             var statusCode = HttpStatusCode.OK;
             var lockResponse = new LockResponseContract();
-            string result = String.Empty;
             
             try
             {
@@ -190,9 +204,8 @@ namespace SmartLock.Controllers
             {
                 lockResponse.Message = userException.Message;
             }
-
-            var response = Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
-            return response;
+            
+            return Request.CreateResponse(statusCode, JsonConvert.SerializeObject(lockResponse));
         }
 
         // DELETE lock/5

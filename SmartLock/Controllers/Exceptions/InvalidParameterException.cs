@@ -18,7 +18,7 @@ namespace SmartLock.Controllers.Exceptions
         : base(
               String.Format(
                   CultureInfo.InvariantCulture,
-                  "Parameter {0} is invalid.",
+                  "Parameter {0} not found or is invalid.",
                   parameterName))
         {
         }

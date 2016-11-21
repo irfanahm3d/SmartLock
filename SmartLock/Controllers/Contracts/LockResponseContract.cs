@@ -4,32 +4,26 @@
  */
 
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace SmartLock.Controllers.Contracts
 {
-    [DataContract]
+    [JsonObject("lock")]
     public class LockResponseContract : ResponseContractBase
     {
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public int LockId { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        
+        [JsonProperty("userId", NullValueHandling = NullValueHandling.Include)]
         public int UserId { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        
+        [JsonProperty("state", NullValueHandling = NullValueHandling.Ignore)]
         public string LockState { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string LockName { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        
+        [JsonProperty("allowedUsers", NullValueHandling = NullValueHandling.Ignore)]
         public IList<int> AllowedUsers { get; set; }        
     }
 }

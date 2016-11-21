@@ -10,6 +10,13 @@ using SmartLock.Controllers.Exceptions;
 
 namespace SmartLock.Controllers.Contracts
 {
+    public enum LockState
+    {
+        None,
+        Lock,
+        Unlock
+    }
+
     public class LockParameters
     {
         public int LockId { get; private set; }
@@ -18,7 +25,7 @@ namespace SmartLock.Controllers.Contracts
 
         public string LockName { get; private set; }
 
-        public string LockState { get; private set; }
+        public LockState LockState { get; private set; }
 
         public IList<int> AllowedUsers { get; private set; }
 
@@ -57,8 +64,10 @@ namespace SmartLock.Controllers.Contracts
                 throw new InvalidParameterException("userId");
             }
 
-            string lockState = queryParameters["lockState"];
-            if (String.IsNullOrWhiteSpace(lockState))
+            string lockStateString = queryParameters["lockState"];
+            LockState lockState;
+            if (String.IsNullOrWhiteSpace(lockStateString) ||
+                !Enum.TryParse<LockState>(lockStateString, true, out lockState))
             {
                 throw new InvalidParameterException("lockState");
             }
@@ -85,7 +94,14 @@ namespace SmartLock.Controllers.Contracts
                 throw new InvalidParameterException("lockName");
             }
 
-            string[] allowedUsersList = queryParameters["allowedUsers"].Split(',');
+            string allowedUsersString = queryParameters["allowedUsers"];
+
+            if (String.IsNullOrWhiteSpace(allowedUsersString))
+            {
+                throw new InvalidParameterException("allowedUsers");
+            }
+
+            string[] allowedUsersList = allowedUsersString.Split(',');
             if (allowedUsersList.Length == 0)
             {
                 throw new InvalidParameterException("allowedUsers");

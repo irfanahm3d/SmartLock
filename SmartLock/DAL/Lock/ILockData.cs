@@ -4,6 +4,7 @@
  */
 
 using System.Collections.Generic;
+using SmartLock.Controllers.Contracts;
 
 namespace SmartLock.DAL.Lock
 {
@@ -13,7 +14,7 @@ namespace SmartLock.DAL.Lock
 
         string GetLockState(int lockId);
 
-        bool ModifyLockState(int lockId, int userId, string state);
+        bool ModifyLockState(int lockId, int userId, LockState state);
 
         LockModel CreateLock(string lockName, IList<int> allowedUsers);
 

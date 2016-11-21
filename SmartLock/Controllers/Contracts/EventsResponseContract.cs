@@ -6,21 +6,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using SmartLock.DAL.Events;
 using Newtonsoft.Json;
 
 namespace SmartLock.Controllers.Contracts
 {
-    [DataContract]
+    [JsonObject("events")]
     public class EventsResponseContract : ResponseContractBase
     {
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        [JsonProperty("userId", NullValueHandling = NullValueHandling.Include)]
         public int UserId { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        
+        [JsonProperty("eventList", NullValueHandling = NullValueHandling.Ignore)]
         public IList<EventContract> EventsList { get; set; } 
 
         public IList<EventContract> ConvertToContract(IList<EventModel> eventModelList)
@@ -36,19 +33,16 @@ namespace SmartLock.Controllers.Contracts
         }
     }
 
-    [DataContract]
+    [JsonObject("event")]
     public class EventContract
     {
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        [JsonProperty("lockId", NullValueHandling = NullValueHandling.Include)]
         public int LockId { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        
+        [JsonProperty("timestamp", NullValueHandling = NullValueHandling.Include)]
         public DateTime Timestamp { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        
+        [JsonProperty("state", NullValueHandling = NullValueHandling.Include)]
         public string State { get; set; }
 
     }

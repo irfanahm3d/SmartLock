@@ -4,6 +4,7 @@
  */
 
 using System.Collections.Generic;
+using SmartLock.Controllers.Contracts;
 
 namespace SmartLock.DAL.Lock
 {
@@ -32,7 +33,7 @@ namespace SmartLock.DAL.Lock
             return this.lockDataLayer.GetLockState(lockId);
         }
 
-        public bool ModifyLockState(int lockId, int userId, string state)
+        public bool ModifyLockState(int lockId, int userId, LockState state)
         {
             // check if user is allowed to change the state of the
             // lock (should happen in data layer).

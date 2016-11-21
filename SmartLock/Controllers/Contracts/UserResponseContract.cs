@@ -2,29 +2,24 @@
  * SmartLock
  * Copyright (c) Irfan Ahmed. 2016
  */
-
-using System.Runtime.Serialization;
+ 
 using Newtonsoft.Json;
 
 namespace SmartLock.Controllers.Contracts
 {
-    [DataContract]
+    [JsonObject("user")]
     public class UserResponseContract : ResponseContractBase
     {
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public int UserId { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string UserName { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        
+        [JsonProperty("email", NullValueHandling = NullValueHandling.Ignore)]
         public string Email { get; set; }
-
-        [DataMember]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        
+        [JsonProperty("isAdmin", NullValueHandling = NullValueHandling.Ignore)]
         public bool IsAdmin { get; set; }
     }
 }

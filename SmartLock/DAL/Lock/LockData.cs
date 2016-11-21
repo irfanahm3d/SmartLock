@@ -5,9 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using SmartLock.Models;
+using SmartLock.Controllers.Contracts;
 using SmartLock.Controllers.Exceptions;
 
 namespace SmartLock.DAL.Lock
@@ -51,7 +51,7 @@ namespace SmartLock.DAL.Lock
             }
         }
 
-        public bool ModifyLockState(int lockId, int userId, string state)
+        public bool ModifyLockState(int lockId, int userId, LockState state)
         {
             using (var smartLock = new SmartLockEntities())
             {
@@ -73,7 +73,7 @@ namespace SmartLock.DAL.Lock
                 }
                 
                 // modify lock state.
-                lockInfo.State = state;
+                lockInfo.State = String.Concat(state.ToString(), "ed");
 
                 int changes = smartLock.SaveChanges();                
                 return changes == 1 ? true : false;
