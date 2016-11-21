@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Web;
+using System.Web.Http.Cors;
 using System.Web.Http;
 using SmartLock.Controllers.Contracts;
 using SmartLock.Controllers.Exceptions;
@@ -14,6 +15,7 @@ using SmartLock.DAL.User;
 
 namespace SmartLock.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class UserController : ApiController
     {
         UserDAL userDal;

@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Web;
+using System.Web.Http.Cors;
 using System.Web.Http;
 using SmartLock.Controllers.Contracts;
 using SmartLock.Controllers.Exceptions;
@@ -16,6 +17,7 @@ using SmartLock.DAL.User;
 
 namespace SmartLock.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class EventsController : ApiController
     {
         EventsDAL eventsDal;
@@ -66,6 +68,7 @@ namespace SmartLock.Controllers
                 IList<EventModel> eventsList = this.eventsDal.GetUserEvents(parameters.UserId);
                 eventsResponse.UserId = parameters.UserId;
                 eventsResponse.EventsList = eventsResponse.ConvertToContract(eventsList);
+                eventsResponse.Message = "List of user events.";
             }
             catch (InvalidParameterException paramsException)
             {
