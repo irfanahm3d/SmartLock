@@ -30,11 +30,6 @@
         <br />
         <div id="locksDiv">
             <table id="locks">
-                <tr>
-                    <th>Door</th>
-                    <th>State</th>
-                    <th>Action</th>
-                </tr>
             </table>
         </div>
     </div>
@@ -55,13 +50,13 @@
             $pass = $form.find("input[name='pass']").val();
 
             // Send the data using get
-            var getUser = $.get("http://localhost/user", { email: $email, password: $pass });
+            var getUser = $.get("http://localhost:63446/user", { email: $email, password: $pass });
 
-            // Put the) results in a div
+            // Put the results in a div
             getUser.done(function (loggedUser) {
                 if (loggedUser.id > 0) {
                     $("#loginDiv").hide("slow");
-                    $("#userDiv").show("slow", function () { }, ShowUserDiv(loggedUser));
+                    $("#userDiv").show("slow", function () {}, ShowUserDiv(loggedUser));
                 }
                 else {
                     $("#loginResult").empty().append(loggedUser.message);
@@ -72,23 +67,13 @@
         function ShowUserDiv(user) {
             $("#welcome").empty().append("Welcome back " + user.name);
 
-            // get locks information
-            var getLocks = $.get("http://localhost/locks", { userId: user.id });
-            getLocks.done(function (locksData) {
-                var locksTable = $('#locks');
-                $.each(locksData.locksList, function (idx, lock) {
-                    var lockAction = "Unlock";
-                    if ("Unlocked" == lock.state) {
-                        lockAction = "Lock";
-                    }
+            if (user.isAdmin) {
+                $("#newLock").show();
+            }
 
-                    locksTable.append(
-                        "<tr><td>" + lock.name + "</td>" +
-                        "<td>" + lock.state + "</td>" +
-                        "<td><form id='lockButton'><input type='submit' value='" + lockAction + "'></form></td></tr>");
-                });
-            });
+            GetLocks();
 
+            // submit lock state change
             $("#lockButton").submit(function (event) {
                 // Stop form from submitting normally
                 event.preventDefault();
@@ -101,24 +86,30 @@
 
             });
 
-            if (user.isAdmin) {
-                $("#newLock").show();
-            }
-
+            // create a new lock
             $("#createLock").submit(function (event) {
                 // Stop form from submitting normally
                 event.preventDefault();
-                alert("hello");
 
-                // Get the email/pass from the form
-                //var $form = $(this);
-                //$lockId = $form.attr("id")
-                //alert($lockId);
+                $form = $(this);
+                $lockName = $form.find("input[name='lockName']").val();
+                $allowedUsers = $form.find("input[name='allowedUsers']").val();
 
+                // Send the data using put
+                var createLock = $.ajax({
+                    url: "http://localhost:63446/lock?userId=" +
+                        user.id + "&lockName=" + $lockName + "&allowedUsers=" + $allowedUsers,
+                    type: "PUT"
+                }).done(function (lock) {
+                    GetLocks();
+                    alert(lock.message);
+                }).fail(function (data) {
+                    alert(data.message);
+                });
             });
 
             $('a[href="#events"]').click(function () {
-                var getEvents = $.get("http://localhost/events", { userId: user.id });
+                var getEvents = $.get("http://localhost:63446/events", { userId: user.id });
                 getEvents.done(function (data) {
                     var eventsTable = $('#events');
                     eventsTable.empty().html("<tr><th>LockId</th><th>State</th><th>Timestamp</th></tr>");
@@ -131,6 +122,26 @@
                     });
                 });
             });
+
+            function GetLocks() {
+                // get locks information
+                var getLocks = $.get("http://localhost:63446/locks", { userId: user.id });
+                getLocks.done(function (locksData) {
+                    var locksTable = $('#locks');
+                    locksTable.empty().html("<tr><th>Door</th><th>State</th><th>Action</th></tr>");
+                    $.each(locksData.locksList, function (idx, lock) {
+                        var lockAction = "Unlock";
+                        if ("Unlocked" == lock.state) {
+                            lockAction = "Lock";
+                        }
+
+                        locksTable.append(
+                            "<tr><td>" + lock.name + "</td>" +
+                            "<td>" + lock.state + "</td>" +
+                            "<td><form id='lockButton'><input type='submit' value='" + lockAction + "'></form></td></tr>");
+                    });
+                });
+            }
         }
     </script>
 </body>

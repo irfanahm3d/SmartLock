@@ -3,7 +3,7 @@
 <head>
     <link rel="stylesheet" type="text/css" href="css/home.css">
     <title></title>
-	<meta charset="utf-8" />
+    <meta charset="utf-8" />
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 <body>
@@ -29,21 +29,14 @@
         </div>
         <br />
         <div id="locksDiv">
-            <table id="locks">
-                <tr>
-                    <th>Door</th>
-                    <th>State</th>
-                    <th>Action</th>
-                </tr>
-            </table>
+            <table id="locks"></table>
         </div>
     </div>
     <div id="userEvents">
         <a href="#events">Show user events</a>
-        <br/>
-        <br/>
-        <table id="events" style="display:none">            
-        </table>
+        <br />
+        <br />
+        <table id="events" style="display:none"></table>
     </div>
     <script>
         $("#userLogin").submit(function (event) {
@@ -58,11 +51,11 @@
             // Send the data using get
             var getUser = $.get("http://smartlockservice.azurewebsites.net/user", { email: $email, password: $pass });
 
-            // Put the) results in a div
+            // Put the results in a div
             getUser.done(function (loggedUser) {
                 if (loggedUser.id > 0) {
                     $("#loginDiv").hide("slow");
-                    $("#userDiv").show("slow", function () { }, ShowUserDiv(loggedUser));
+                    $("#userDiv").show("slow", function () {}, ShowUserDiv(loggedUser));
                 }
                 else {
                     $("#loginResult").empty().append(loggedUser.message);
@@ -73,23 +66,13 @@
         function ShowUserDiv(user) {
             $("#welcome").empty().append("Welcome back " + user.name);
 
-            // get locks information
-            var getLocks = $.get("http://smartlockservice.azurewebsites.net/locks", { userId: user.id });
-            getLocks.done(function (locksData) {
-                var locksTable = $('#locks');
-                $.each(locksData.locksList, function (idx, lock) {
-                    var lockAction = "Unlock";
-                    if ("Unlocked" == lock.state) {
-                        lockAction = "Lock";
-                    }
+            if (user.isAdmin) {
+                $("#newLock").show();
+            }
 
-                    locksTable.append(
-                        "<tr><td>" + lock.name + "</td>" +
-                        "<td>" + lock.state + "</td>" +
-                        "<td><form id='lockButton'><input type='submit' value='" + lockAction + "'></form></td></tr>");
-                });
-            });
+            GetLocks();
 
+            // submit lock state change
             $("#lockButton").submit(function (event) {
                 // Stop form from submitting normally
                 event.preventDefault();
@@ -102,20 +85,26 @@
 
             });
 
-            if (user.isAdmin) {
-                $("#newLock").show();
-            }
-
+            // create a new lock
             $("#createLock").submit(function (event) {
                 // Stop form from submitting normally
                 event.preventDefault();
-                alert("hello");
 
-                // Get the email/pass from the form
-                //var $form = $(this);
-                //$lockId = $form.attr("id")
-                //alert($lockId);
+                $form = $(this);
+                $lockName = $form.find("input[name='lockName']").val();
+                $allowedUsers = $form.find("input[name='allowedUsers']").val();
 
+                // Send the data using put
+                var createLock = $.ajax({
+                    url: "http://smartlockservice.azurewebsites.net/lock?userId=" +
+                        user.id + "&lockName=" + $lockName + "&allowedUsers=" + $allowedUsers,
+                    type: "PUT"
+                }).done(function (lock) {
+                    GetLocks();
+                    alert(lock.message);
+                }).fail(function (data) {
+                    alert(data.message);
+                });
             });
 
             $('a[href="#events"]').click(function () {
@@ -132,6 +121,26 @@
                     });
                 });
             });
+
+            function GetLocks() {
+                // get locks information
+                var getLocks = $.get("http://smartlockservice.azurewebsites.net/locks", { userId: user.id });
+                getLocks.done(function (locksData) {
+                    var locksTable = $('#locks');
+                    locksTable.empty().html("<tr><th>Door</th><th>State</th><th>Action</th></tr>");
+                    $.each(locksData.locksList, function (idx, lock) {
+                        var lockAction = "Unlock";
+                        if ("Unlocked" == lock.state) {
+                            lockAction = "Lock";
+                        }
+
+                        locksTable.append(
+                            "<tr><td>" + lock.name + "</td>" +
+                            "<td>" + lock.state + "</td>" +
+                            "<td><form id='lockButton'><input type='submit' value='" + lockAction + "'></form></td></tr>");
+                    });
+                });
+            }
         }
     </script>
 </body>
