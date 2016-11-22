@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="css/home.css">
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+</head>
+<body>
+    <div>
+        <div id="welcome"></div>
+        <br />
+        <div id="newLock" style="display:none">
+            Create lock
+            <form id='createLock'>
+                <input type='text' name='lockName' placeholder='Name of the door'>
+                <input type='text' name='allowedUsers' placeholder='List of users. E.g. 23,65,8'>
+                <input type='submit' value='Create'>
+            </form>
+        </div>
+        <br />
+        <div id="locksDiv">
+            <table id="locks">
+                <tr>
+                    <th>Door</th>
+                    <th>State</th>
+                    <th>Action</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="userEvents">
+        <a href="#events">Show user events</a>
+        <br/>
+        <table id="events">
+            <tr>
+                <th>LockId</th>
+                <th>State</th>
+                <th>Timestamp</th>
+            </tr>
+        </table>
+    </div>
+    <script>
+        var user = JSON.parse(GetURLParameter('user'));
+        $("#welcome").empty().append("Welcome back " + user.name);
+
+        // get locks information
+        var getLocks = $.get("http://smartlockservice.azurewebsites.net/locks", { userId: user.id });
+        getLocks.done(function(locksData) {
+            var locksElement = $('#locks');
+            $.each(locksData.locksList, function (idx, element) {
+                var lockAction = "Unlock";
+                if ("Unlocked" == element.state) {
+                    lockAction = "Lock";
+                }
+
+                locksElement.append(
+                    "<tr><td>" + element.name + "</td>" +
+                    "<td>" + element.state + "</td>" +
+                    "<td><form id='lockButton'><input type='submit' value='" + lockAction + "'></form></td></tr>");
+            });
+        });
+
+        $("#lockButton").submit(function (event) {
+            // Stop form from submitting normally
+            event.preventDefault();
+            alert("hello");
+
+            // Get the email/pass from the form
+            //var $form = $(this);
+            //$lockId = $form.attr("id")
+            //alert($lockId);
+
+        });
+
+        if (user.isAdmin) {
+            $("#newLock").show();
+        }
+
+        $("#createLock").submit(function (event) {
+            // Stop form from submitting normally
+            event.preventDefault();
+            alert("hello");
+
+            // Get the email/pass from the form
+            //var $form = $(this);
+            //$lockId = $form.attr("id")
+            //alert($lockId);
+
+        });
+
+        $('a[href="#events"]').click(function () {
+            var getEvents = $.get("http://smartlockservice.azurewebsites.net/events", { userId: user.id });
+            getEvents.done(function (data) {
+                $.each(data.eventList, function (idx, element) {
+
+                });
+            });
+        });
+
+        function GetURLParameter(parameter) {
+            var sPageURL = window.location.search.substring(1);
+            var sURLVariables = sPageURL.split('&');
+            for (var i = 0; i < sURLVariables.length; i++) {
+                var sParameterName = sURLVariables[i].split('=');
+                if (sParameterName[0] == parameter) {
+                    return decodeURIComponent(sParameterName[1]);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

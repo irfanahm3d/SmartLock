@@ -1,0 +1,40 @@
+﻿th, td {
+    padding: 10px;
+    align-content: center;
+}
+table#locks tr:nth-child(even) {
+    background-color: #eee;
+}
+table#locks tr:nth-child(odd) {
+    background-color: #fff;
+}
+table#locks th {
+    color: white;
+    background-color: black;
+}
+div#welcome {
+    position: relative;
+    left: 5%;
+    top: 10px;
+    font-size: 250%;
+    width: 300px;
+    float: left;
+}
+div#newLock {
+    position: relative;
+    left: 5%;
+    top: 5px;
+    float: inherit;
+}
+div#locksDiv {
+    position: relative;
+    left: 5%;
+    top: 5px;
+    float: inherit;
+}
+div#userEvents {
+    position: relative;
+    right: 34%;
+    top: -414px;
+    float: right;
+}

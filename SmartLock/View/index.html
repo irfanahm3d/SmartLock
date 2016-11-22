@@ -6,38 +6,36 @@
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 <body>
-    <form action="/" id="searchForm">
+    <form action="/" id="userLogin">
         <input type="text" name="email" placeholder="email">
         <input type="password" name="pass" placeholder="password">
-        <input type="submit" value="Search">
+        <input type="submit" value="Login">
     </form>
-    <!-- the result of the search will be rendered inside this div -->
     <div id="result"></div>
+    <script>
+    // Attach a submit handler to the form
+    $("#userLogin").submit(function (event) {
+        // Stop form from submitting normally
+        event.preventDefault();
 
-<script>
-// Attach a submit handler to the form
-$( "#searchForm" ).submit(function( event ) {
+        // Get the email/pass from the form
+        var $form = $(this);
+        $email = $form.find("input[name='email']").val();
+        $pass = $form.find("input[name='pass']").val();
 
-  // Stop form from submitting normally
-  event.preventDefault();
-
-  // Get some values from elements on the page:
-  var $form = $( this ),
-    term = $form.find( "input[name='email']" ).val(),
-    url = $form.attr("action");
-
-  $email = $form.find("input[name='email']").val();
-  $pass = $form.find("input[name='pass']").val();
-
-  // Send the data using get
-  var getting = $.get( "http://smartlockservice.azurewebsites.net/user", { email: $email, password: $pass });
-
-  // Put the results in a div
-  getting.done(function( data ) {
-    var content = $( data ).find( "#content" );
-    $( "#result" ).empty().append( content );
-  });
-});
+        // Send the data using get
+        var getUser = $.get("http://smartlockservice.azurewebsites.net/user", { email: $email, password: $pass });
+        
+        // Put the) results in a div
+        getUser.done(function (user) {
+            if (user.id > 0) {
+                window.location.href = "./home.html?user=" + JSON.stringify(user);
+            }
+            else {
+                $("#result").empty().append(user.message);
+            }
+        });
+    });
     </script>
 </body>
 </html>
