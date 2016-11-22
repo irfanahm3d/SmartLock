@@ -6,15 +6,38 @@
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 <body>
+    <form action="/" id="searchForm">
+        <input type="text" name="email" placeholder="email">
+        <input type="password" name="pass" placeholder="password">
+        <input type="submit" value="Search">
+    </form>
+    <!-- the result of the search will be rendered inside this div -->
+    <div id="result"></div>
 
+<script>
+// Attach a submit handler to the form
+$( "#searchForm" ).submit(function( event ) {
+
+  // Stop form from submitting normally
+  event.preventDefault();
+
+  // Get some values from elements on the page:
+  var $form = $( this ),
+    term = $form.find( "input[name='email']" ).val(),
+    url = $form.attr("action");
+
+  $email = $form.find("input[name='email']").val();
+  $pass = $form.find("input[name='pass']").val();
+
+  // Send the data using get
+  var getting = $.get( "http://smartlockservice.azurewebsites.net/user", { email: $email, password: $pass });
+
+  // Put the results in a div
+  getting.done(function( data ) {
+    var content = $( data ).find( "#content" );
+    $( "#result" ).empty().append( content );
+  });
+});
+    </script>
 </body>
 </html>
-<script type="text/javascript">
-$(function()
-{
-        $.get("http://smartlockservice.azurewebsites.net", function (data, textStatus)
-        {
-                alert("Done, with the following status: " + textStatus + ". Here is the response: " + data);
-        });
-});
-</script>
