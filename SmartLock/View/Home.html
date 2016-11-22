@@ -32,12 +32,8 @@
     <div id="userEvents">
         <a href="#events">Show user events</a>
         <br/>
-        <table id="events">
-            <tr>
-                <th>LockId</th>
-                <th>State</th>
-                <th>Timestamp</th>
-            </tr>
+        <br/>
+        <table id="events" style="display:none">            
         </table>
     </div>
     <script>
@@ -47,16 +43,16 @@
         // get locks information
         var getLocks = $.get("http://smartlockservice.azurewebsites.net/locks", { userId: user.id });
         getLocks.done(function(locksData) {
-            var locksElement = $('#locks');
-            $.each(locksData.locksList, function (idx, element) {
+            var locksTable = $('#locks');
+            $.each(locksData.locksList, function (idx, lock) {
                 var lockAction = "Unlock";
-                if ("Unlocked" == element.state) {
+                if ("Unlocked" == lock.state) {
                     lockAction = "Lock";
                 }
 
-                locksElement.append(
-                    "<tr><td>" + element.name + "</td>" +
-                    "<td>" + element.state + "</td>" +
+                locksTable.append(
+                    "<tr><td>" + lock.name + "</td>" +
+                    "<td>" + lock.state + "</td>" +
                     "<td><form id='lockButton'><input type='submit' value='" + lockAction + "'></form></td></tr>");
             });
         });
@@ -92,8 +88,14 @@
         $('a[href="#events"]').click(function () {
             var getEvents = $.get("http://smartlockservice.azurewebsites.net/events", { userId: user.id });
             getEvents.done(function (data) {
-                $.each(data.eventList, function (idx, element) {
-
+                var eventsTable = $('#events');
+                eventsTable.empty().html("<tr><th>LockId</th><th>State</th><th>Timestamp</th></tr>");
+                eventsTable.show("slow");
+                $.each(data.eventList, function (idx, event) {
+                    eventsTable.append(
+                        "<tr><td>" + event.lockId + "</td>" +
+                        "<td>" + event.state + "</td>" +
+                        "<td>" + event.timestamp + "</td></tr>");
                 });
             });
         });

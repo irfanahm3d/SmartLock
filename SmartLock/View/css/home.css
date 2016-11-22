@@ -38,3 +38,16 @@ div#userEvents {
     top: -414px;
     float: right;
 }
+table#events {
+    position: absolute;
+}
+table#events tr:nth-child(even) {
+    background-color: #eee;
+}
+table#events tr:nth-child(odd) {
+    background-color: #fff;
+}
+table#events th {
+    color: white;
+    background-color: black;
+}
