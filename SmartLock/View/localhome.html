@@ -3,7 +3,7 @@
 <head>
     <link rel="stylesheet" type="text/css" href="css/home.css">
     <title></title>
-	<meta charset="utf-8" />
+    <meta charset="utf-8" />
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 <body>
@@ -40,10 +40,9 @@
     </div>
     <div id="userEvents">
         <a href="#events">Show user events</a>
-        <br/>
-        <br/>
-        <table id="events" style="display:none">            
-        </table>
+        <br />
+        <br />
+        <table id="events" style="display:none"></table>
     </div>
     <script>
         $("#userLogin").submit(function (event) {
@@ -56,7 +55,7 @@
             $pass = $form.find("input[name='pass']").val();
 
             // Send the data using get
-            var getUser = $.get("http://smartlockservice.azurewebsites.net/user", { email: $email, password: $pass });
+            var getUser = $.get("http://localhost/user", { email: $email, password: $pass });
 
             // Put the) results in a div
             getUser.done(function (loggedUser) {
@@ -74,7 +73,7 @@
             $("#welcome").empty().append("Welcome back " + user.name);
 
             // get locks information
-            var getLocks = $.get("http://smartlockservice.azurewebsites.net/locks", { userId: user.id });
+            var getLocks = $.get("http://localhost/locks", { userId: user.id });
             getLocks.done(function (locksData) {
                 var locksTable = $('#locks');
                 $.each(locksData.locksList, function (idx, lock) {
@@ -119,7 +118,7 @@
             });
 
             $('a[href="#events"]').click(function () {
-                var getEvents = $.get("http://smartlockservice.azurewebsites.net/events", { userId: user.id });
+                var getEvents = $.get("http://localhost/events", { userId: user.id });
                 getEvents.done(function (data) {
                     var eventsTable = $('#events');
                     eventsTable.empty().html("<tr><th>LockId</th><th>State</th><th>Timestamp</th></tr>");

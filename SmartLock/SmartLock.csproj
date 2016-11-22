@@ -122,7 +122,7 @@
     </Content>
     <Content Include="View\css\home.css" />
     <Content Include="View\home.html" />
-    <Content Include="View\index.html" />
+    <Content Include="View\localhome.html" />
     <Content Include="Web.config" />
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
     <Content Include="packages.config" />

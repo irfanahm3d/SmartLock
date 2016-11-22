@@ -12,6 +12,14 @@ table#locks th {
     color: white;
     background-color: black;
 }
+div#loginDiv {
+    position: relative;
+    align-content:center; 
+    left: 38%;
+    top: 120px;
+    width: 300px;
+    float: left;
+}
 div#welcome {
     position: relative;
     left: 5%;
